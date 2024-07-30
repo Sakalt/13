@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windowsの未来のロゴの歴史</title>
+    <style>
+        body {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .logo {
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ddd;
+        }
+        #form {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #form input {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+        }
+        #saveButton {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+</head>
+<body>
+    <div id="form">
+        <label for="range">期間を指定 (例: 2024-2500): </label>
+        <input type="text" id="range" placeholder="2024-2500">
+        <label for="colorRange">色の範囲 (例: #FFFFFF-#0000FF): </label>
+        <input type="text" id="colorRange" placeholder="#FFFFFF-#0000FF">
+        <button id="generateButton">ロゴを生成</button>
+        <button id="saveButton">画像を保存</button>
+    </div>
+    <div id="logoContainer"></div>
+    
+    <script>
+        function interpolateColor(color1, color2, factor) {
+            let result = "#";
+            for (let i = 1; i <= 6; i += 2) {
+                const val1 = parseInt(color1.substr(i, 2), 16);
+                const val2 = parseInt(color2.substr(i, 2), 16);
+                const val = Math.round(val1 + factor * (val2 - val1)).toString(16);
+                result += ("0" + val).slice(-2);
+            }
+            return result;
+        }
+
+        function getColorInRange(colorRange) {
+            const [color1, color2] = colorRange.split('-');
+            const factor = Math.random();
+            return interpolateColor(color1, color2, factor);
+        }
+
+        function createGradient(context, width, height, color1, color2) {
+            let gradient = context.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, color1);
+            gradient.addColorStop(1, color2);
+            return gradient;
+        }
+
+        function getRandomColor(colorRange) {
+            return getColorInRange(colorRange);
+        }
+
+        function createLogo(seed, width, height, colorRange) {
+            let canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            let context = canvas.getContext('2d');
+
+            // Seed the random number generator
+            Math.seedrandom(seed);
+
+            // Create gradient
+            let color1 = getRandomColor(colorRange);
+            let color2 = getRandomColor(colorRange);
+            context.fillStyle = createGradient(context, width, height, color1, color2);
+            context.fillRect(0, 0, width, height);
+
+            // Draw multiple shapes
+            const shapes = ['rectangle', 'ellipse', 'polygon'];
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+            context.fillStyle = getRandomColor(colorRange);
+            if (shape === 'rectangle') {
+                context.fillRect(Math.random() * width, Math.random() * height, Math.random() * width / 2, Math.random() * height / 2);
+            } else if (shape === 'ellipse') {
+                context.beginPath();
+                context.ellipse(Math.random() * width, Math.random() * height, Math.random() * width / 3, Math.random() * height / 3, 0, 0, 2 * Math.PI);
+                context.fill();
+            } else if (shape === 'polygon') {
+                context.beginPath();
+                const sides = Math.floor(Math.random() * 5) + 3;
+                for (let i = 0; i < sides; i++) {
+                    const angle = (i * 2 * Math.PI) / sides;
+                    const x = Math.random() * width;
+                    const y = Math.random() * height;
+                    context.lineTo(x + Math.cos(angle) * Math.random() * width / 3, y + Math.sin(angle) * Math.random() * height / 3);
+                }
+                context.closePath();
+                context.fill();
+            }
+
+            // Add 3D effect
+            context.globalAlpha = 0.6;
+            context.fillRect(0, 0, width, height);
+            context.globalAlpha = 1.0;
+
+            // Add random points (20% chance)
+            if (Math.random() < 0.2) {
+                context.fillStyle = getRandomColor(colorRange);
+                for (let i = 0; i < Math.floor(Math.random() * 4) + 2; i++) {
+                    let x = Math.random() * width;
+                    let y = Math.random() * height;
+                    context.beginPath();
+                    context.arc(x, y, Math.random() * 10 + 5, 0, 2 * Math.PI);
+                    context.fill();
+                }
+            }
+
+            // Cutout shapes
+            context.globalCompositeOperation = 'destination-out';
+            context.fillStyle = 'black';
+            const cutoutShapes = ['parallelogram', 'diamond', 'circle'];
+            const cutoutShape = cutoutShapes[Math.floor(Math.random() * cutoutShapes.length)];
+            if (cutoutShape === 'parallelogram') {
+                context.beginPath();
+                context.moveTo(width / 4, height / 4);
+                context.lineTo(width * 3 / 4, height / 4);
+                context.lineTo(width * 2 / 3, height * 3 / 4);
+                context.lineTo(width / 3, height * 3 / 4);
+                context.closePath();
+                context.fill();
+            } else if (cutoutShape === 'diamond') {
+                context.beginPath();
+                context.moveTo(width / 2, height / 4);
+                context.lineTo(width * 3 / 4, height / 2);
+                context.lineTo(width / 2, height * 3 / 4);
+                context.lineTo(width / 4, height / 2);
+                context.closePath();
+                context.fill();
+            } else if (cutoutShape === 'circle') {
+                context.beginPath();
+                context.arc(width / 2, height / 2, width / 4, 0, 2 * Math.PI);
+                context.fill();
+            }
+
+            return canvas;
+        }
+
+        function generateLogos(startYear, endYear, numLogos, colorRange) {
+            const logoContainer = document.getElementById('logoContainer');
+            logoContainer.innerHTML = '';
+
+            const years = Array.from({length: numLogos}, (_, i) => Math.round(startYear + i * (endYear - startYear) / numLogos));
+
+            years.forEach((year, index) => {
+                const logoCanvas = createLogo(index, 100, 100, colorRange);
+
+                const logoDiv = document.createElement('div');
+                logoDiv.className = 'logo';
+                logoDiv.appendChild(logoCanvas);
+
+                const caption = document.createElement('p');
+                caption.textContent = `リリース日: ${year}年`;
+                logoDiv.appendChild(caption);
+
+                logoContainer.appendChild(logoDiv);
+            });
+        }
+
+        document.getElementById('generateButton').addEventListener('click', () => {
+            const range = document.getElementById('range').value;
+            const [startYear, endYear] = range.split('-').map(Number);
+            const colorRange = document.getElementById('colorRange').value;
+
+            if (!isNaN(startYear) && !isNaN(endYear) && startYear < endYear && /^#[0-9A-Fa-f]{6}-#[0-9A-Fa-f]{6}$/.test(colorRange)) {
+                generateLogos(startYear, endYear, 40, colorRange);
+            } else {
+                alert('正しい期間と色の範囲を指定してください (例: 2024-2500 および #FFFFFF-#0000FF)');
+            }
+        });
+
+        document.getElementById('saveButton').addEventListener('click', () => {
+            const logoContainer = document.getElementById('logoContainer');
+            if (logoContainer.children.length === 0) {
+                alert('まずロゴを生成してください');
+                return;
+            }
+
+            logoContainer.querySelectorAll('canvas').forEach((canvas, index) => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `logo_${index + 1}.png`;
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>
