@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 40</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            background-color: #1E1E1E;
+        }
+
+        .taskbar {
+            width: 100%;
+            height: 40px;
+            background-color: #333;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .start-menu-button {
+            width: 40px;
+            height: 40px;
+            background-color: #0078D7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .start-menu {
+            display: none;
+            position: absolute;
+            bottom: 40px;
+            left: 0;
+            width: 200px;
+            background-color: #FFF;
+            box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
+        }
+
+        .start-menu ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .start-menu ul li {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .start-menu ul li:hover {
+            background-color: #EEE;
+        }
+
+        .desktop {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 40px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .window {
+            width: 600px;
+            height: 400px;
+            background-color: #FFF;
+            border: 1px solid #CCC;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            display: flex;
+            flex-direction: column;
+            z-index: 999;
+        }
+
+        .window-header {
+            background-color: #0078D7;
+            color: white;
+            padding: 5px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .window-content {
+            flex: 1;
+            padding: 10px;
+            overflow: auto;
+        }
+
+        .window-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .close-button, .minimize-button, .maximize-button {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="taskbar">
+        <div class="start-menu-button" onclick="toggleStartMenu()">
+            &#x1F5D8;
+        </div>
+    </div>
+
+    <div class="start-menu" id="start-menu">
+        <ul id="start-menu-items"></ul>
+    </div>
+
+    <div class="desktop" id="desktop"></div>
+
+    <script>
+        const apps = [
+            { id: 'file-explorer', title: 'File Explorer', content: '<p>ここにファイル一覧を表示することができます。</p>' },
+            { id: 'browser', title: 'Browser', content: '<iframe src="https://www.bing.com" style="width: 100%; height: 100%; border: none;"></iframe>' },
+            { id: 'text-editor', title: 'Text Editor', content: '<textarea style="width: 100%; height: 100%;"></textarea>' },
+            { id: 'notes', title: 'Notes', content: '<textarea style="width: 100%; height: 100%;"></textarea>' },
+            { id: 'tv', title: 'TV', content: '<input type="file" accept="video/*" onchange="uploadVideo(event)"><div id="video-list"></div>' },
+            { id: 'music', title: 'Music', content: '<input type="file" accept="audio/*" onchange="uploadAudio(event)"><div id="audio-list"></div>' },
+            { id: 'photos', title: 'Photos', content: '<input type="file" accept="image/*" onchange="uploadImage(event)"><div id="image-list"></div>' },
+            { id: 'calendar', title: 'Calendar', content: '<iframe src="https://calendar.google.com/calendar/embed" style="width: 100%; height: 100%; border: none;"></iframe>' },
+            { id: 'mail', title: 'Mail', content: '<iframe src="https://mail.google.com" style="width: 100%; height: 100%; border: none;"></iframe>' },
+            { id: 'maps', title: 'Maps', content: '<iframe src="https://www.google.com/maps" style="width: 100%; height: 100%; border: none;"></iframe>' }
+        ];
+
+        function toggleStartMenu() {
+            const startMenu = document.getElementById('start-menu');
+            startMenu.style.display = startMenu.style.display === 'none' || startMenu.style.display === '' ? 'block' : 'none';
+        }
+
+        function openWindow(appId) {
+            const app = apps.find(a => a.id === appId);
+            const existingWindow = document.getElementById(app.id);
+
+            if (existingWindow) {
+                existingWindow.style.display = 'flex';
+            } else {
+                const window = document.createElement('div');
+                window.className = 'window';
+                window.id = app.id;
+
+                const header = document.createElement('div');
+                header.className = 'window-header';
+
+                const title = document.createElement('span');
+                title.className = 'title';
+                title.innerText = app.title;
+
+                const buttons = document.createElement('div');
+                buttons.className = 'window-buttons';
+
+                const closeButton = document.createElement('button');
+                closeButton.className = 'close-button';
+                closeButton.innerText = '×';
+                closeButton.onclick = () => closeWindow(app.id);
+
+                buttons.appendChild(closeButton);
+                header.appendChild(title);
+                header.appendChild(buttons);
+
+                const content = document.createElement('div');
+                content.className = 'window-content';
+                content.innerHTML = app.content;
+
+                window.appendChild(header);
+                window.appendChild(content);
+
+                document.getElementById('desktop').appendChild(window);
+                makeDraggable(window);
+            }
+        }
+
+        function closeWindow(appId) {
+            const window = document.getElementById(appId);
+            window.style.display = 'none';
+        }
+
+        function makeDraggable(element) {
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            element.querySelector('.window-header').addEventListener('mousedown', (e) => {
+                isDragging = true;
+                offsetX = e.clientX - element.offsetLeft;
+                offsetY = e.clientY - element.offsetTop;
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            function onMouseMove(e) {
+                if (isDragging) {
+                    element.style.left = `${e.clientX - offsetX}px`;
+                    element.style.top = `${e.clientY - offsetY}px`;
+                }
+            }
+
+            function onMouseUp() {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        }
+
+        function uploadVideo(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const videoList = document.getElementById('video-list');
+                const video = document.createElement('video');
+                video.controls = true;
+                video.src = URL.createObjectURL(file);
+                videoList.appendChild(video);
+            }
+        }
+
+        function uploadAudio(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const audioList = document.getElementById('audio-list');
+                const audio = document.createElement('audio');
+                audio.controls = true;
+                audio.src = URL.createObjectURL(file);
+                audioList.appendChild(audio);
+            }
+        }
+
+        function uploadImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const imageList = document.getElementById('image-list');
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                imageList.appendChild(img);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const startMenuItems = document.getElementById('start-menu-items');
+            apps.forEach(app => {
+                const listItem = document.createElement('li');
+                listItem.innerText = app.title;
+                listItem.onclick = () => openWindow(app.id);
+                startMenuItems.appendChild(listItem);
+            });
+        });
+    </script>
+</body>
+</html>
