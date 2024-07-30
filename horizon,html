@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>macOS Horizon (17)</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #menu-bar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 30px;
+            background: #f0f0f5;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        #menu-bar .menu-item {
+            margin-right: 20px;
+            cursor: pointer;
+            color: #007aff;
+        }
+        #menu-bar .menu-item:hover {
+            text-decoration: underline;
+        }
+        #desktop {
+            height: calc(100vh - 70px); /* Adjusting height for both menu and taskbar */
+            margin-top: 30px; /* Menu bar height */
+        }
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: white;
+            border-top: 1px solid #ccc;
+        }
+        .start-menu {
+            position: absolute;
+            bottom: 40px;
+            left: 10px;
+            width: 250px;
+            background: white;
+            border: 1px solid #ccc;
+            display: none;
+            flex-wrap: wrap;
+        }
+        .start-menu.visible {
+            display: flex;
+        }
+        .start-menu button {
+            width: 100%;
+            padding: 5px;
+            border: none;
+            background: none;
+            text-align: left;
+        }
+        .taskbar .start-button {
+            width: 40px;
+            height: 40px;
+            background: url('img/macOS-start-icon.png') no-repeat center center;
+            background-size: cover;
+            border: none;
+        }
+        .taskbar .taskbar-icons {
+            display: flex;
+            gap: 10px;
+        }
+        .taskbar .taskbar-icons button {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .window {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+        .window-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #007aff;
+            padding: 5px;
+            color: white;
+            border-bottom: 1px solid #ccc;
+        }
+        .window-header button {
+            border: none;
+            background: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        .settings ul {
+            list-style: none;
+            padding: 0;
+        }
+        .settings li {
+            padding: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="menu-bar">
+        <div class="menu-item">ファイル</div>
+        <div class="menu-item">編集</div>
+        <div class="menu-item">表示</div>
+        <div class="menu-item">ウィンドウ</div>
+        <div class="menu-item">ヘルプ</div>
+    </div>
+    <div id="desktop"></div>
+    <div class="taskbar">
+        <button class="start-button"></button>
+        <div class="taskbar-icons">
+            <button style="background-image: url('img/finder-icon.png');"></button>
+            <button style="background-image: url('img/safari-icon.png');"></button>
+            <button style="background-image: url('img/textedit-icon.png');"></button>
+            <!-- 他のアプリのアイコンも追加可能 -->
+        </div>
+    </div>
+    <div class="start-menu" id="startMenu">
+        <button onclick="openApp('finder')">Finder</button>
+        <button onclick="openApp('safari')">Safari</button>
+        <button onclick="openApp('textedit')">TextEdit</button>
+        <button onclick="openApp('settings')">System Preferences</button>
+        <button onclick="openApp('calendar')">Calendar</button>
+        <button onclick="openApp('calculator')">Calculator</button>
+        <button onclick="openApp('preview')">Preview</button>
+        <button onclick="openApp('music')">Music</button>
+        <button onclick="openApp('tv')">TV</button>
+        <button onclick="openApp('mail')">Mail</button>
+        <button onclick="openApp('activity-monitor')">Activity Monitor</button>
+        <button onclick="openApp('weather')">Weather</button>
+        <button onclick="openApp('news')">News</button>
+        <button onclick="openApp('maps')">Maps</button>
+        <button onclick="openApp('photos')">Photos</button>
+    </div>
+    <script>
+        const startButton = document.querySelector('.start-button');
+        const startMenu = document.getElementById('startMenu');
+
+        startButton.addEventListener('click', () => {
+            startMenu.classList.toggle('visible');
+        });
+
+        const apps = [
+            { id: 'finder', name: 'Finder', type: 'file-explorer', url: 'https://www.apple.com/finder' },
+            { id: 'safari', name: 'Safari', type: 'web-browser', url: 'https://www.apple.com/safari' },
+            { id: 'textedit', name: 'TextEdit', type: 'text-edit', url: 'https://www.apple.com/textedit' },
+            { id: 'settings', name: 'System Preferences', type: 'settings' },
+            { id: 'calendar', name: 'Calendar', type: 'calendar', url: 'https://calendar.google.com' },
+            { id: 'calculator', name: 'Calculator', type: 'calculator' },
+            { id: 'preview', name: 'Preview', type: 'preview', url: 'https://www.example.com/preview' },
+            { id: 'music', name: 'Music', type: 'music' },
+            { id: 'tv', name: 'TV', type: 'video', url: 'https://www.example.com/tv' },
+            { id: 'mail', name: 'Mail', type: 'email', url: 'https://mail.google.com' },
+            { id: 'activity-monitor', name: 'Activity Monitor', type: 'task-manager' },
+            { id: 'weather', name: 'Weather', type: 'weather', url: 'https://weather.com' },
+            { id: 'news', name: 'News', type: 'news', url: 'https://news.google.com' },
+            { id: 'maps', name: 'Maps', type: 'maps', url: 'https://maps.google.com' },
+            { id: 'photos', name: 'Photos', type: 'photos' }
+        ];
+
+        function openApp(appId) {
+            const app = apps.find(a => a.id === appId);
+            const windowDiv = document.createElement('div');
+            windowDiv.className = 'window';
+            windowDiv.id = app.id;
+            windowDiv.style.width = '400px';
+            windowDiv.style.height = '300px';
+            windowDiv.style.top = '50px';
+            windowDiv.style.left = '50px';
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'window-header';
+            headerDiv.innerHTML = `
+                ${app.name}
+                <div>
+                    <button onclick="minimizeWindow('${app.id}')">_</button>
+                    <button onclick="maximizeWindow('${app.id}')">□</button>
+                    <button onclick="closeWindow('${app.id}')">X</button>
+                </div>
+            `;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'window-content';
+            contentDiv.style.height = 'calc(100% - 30px)';
+
+            if (app.url) {
+                contentDiv.innerHTML = `
+                    <iframe src="${app.url}"></iframe>
+                `;
+            } else {
+                contentDiv.innerHTML = `
+                    <div>${app.name}の内容</div>
+                `;
+            }
+
+            windowDiv.appendChild(headerDiv);
+            windowDiv.appendChild(contentDiv);
+            document.getElementById('desktop').appendChild(windowDiv);
+        }
+
+        function minimizeWindow(id) {
+            const windowDiv = document.getElementById(id);
+            windowDiv.style.display = 'none';
+        }
+
+        function maximizeWindow(id) {
+            const windowDiv = document.getElementById(id);
+            windowDiv.style.width = '100%';
+            windowDiv.style.height = 'calc(100vh - 70px)'; /* Full height minus menu and taskbar */
+            windowDiv.style.top = '0';
+            windowDiv.style.left = '0';
+        }
+
+        function closeWindow(id) {
+            const windowDiv = document.getElementById(id);
+            windowDiv.remove();
+        }
+
+        function changeTheme(theme) {
+            // Add theme change functionality here
+            alert('テーマが変更されました: ' + theme);
+        }
+    </script>
+</body>
+</html>
