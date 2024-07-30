@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows77 (2201) OS Mockup</title>
+    <style>
+        body {
+            background: url('img/xp-background.jfif') no-repeat center center fixed;
+            background-size: cover;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+        .start-menu {
+            position: absolute;
+            bottom: 40px;
+            left: 10px;
+            width: 250px;
+            background: white;
+            border: 1px solid #ccc;
+            display: none;
+            flex-wrap: wrap;
+        }
+        .start-menu.visible {
+            display: flex;
+        }
+        .start-menu button {
+            width: 100%;
+            padding: 5px;
+            border: none;
+            background: none;
+            text-align: left;
+        }
+        .taskbar .start-button {
+            width: 40px;
+            height: 40px;
+            background: url('path/to/start-button.png') no-repeat center center;
+            background-size: cover;
+            border: none;
+        }
+        .taskbar .taskbar-icons {
+            display: flex;
+            gap: 10px;
+        }
+        .taskbar .taskbar-icons button {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+        .window {
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .window-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0078D7;
+            padding: 5px;
+            color: white;
+        }
+        .window-header button {
+            border: none;
+            background: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        #desktop {
+            height: calc(100vh - 40px);
+        }
+    </style>
+</head>
+<body>
+    <div id="desktop"></div>
+    <div class="taskbar">
+        <button class="start-button"></button>
+        <div class="taskbar-icons">
+            <button style="background-image: url('img/explorer-icon.png');"></button>
+            <button style="background-image: url('img/browser-icon.png');"></button>
+            <button style="background-image: url('img/notepad-icon.png');"></button>
+            <!-- 他のアプリのアイコンも追加可能 -->
+        </div>
+    </div>
+    <div class="start-menu" id="startMenu">
+        <button onclick="openApp('explorer')">ファイルエクスプローラー</button>
+        <button onclick="openApp('browser')">ウェブブラウザ (Bing)</button>
+        <button onclick="openApp('notepad')">メモ帳</button>
+        <button onclick="openApp('settings')">設定</button>
+        <button onclick="openApp('calendar')">カレンダー</button>
+        <button onclick="openApp('calculator')">電卓</button>
+        <button onclick="openApp('paint')">ペイント</button>
+        <button onclick="openApp('music-player')">ミュージックプレーヤー</button>
+        <button onclick="openApp('video-player')">ビデオプレーヤー</button>
+        <button onclick="openApp('email')">メール</button>
+        <button onclick="openApp('task-manager')">タスクマネージャー</button>
+        <button onclick="openApp('weather')">天気予報</button>
+        <button onclick="openApp('news')">ニュース</button>
+        <button onclick="openApp('maps')">地図</button>
+        <button onclick="openApp('photos')">写真</button>
+    </div>
+    <script>
+        const startButton = document.querySelector('.start-button');
+        const startMenu = document.getElementById('startMenu');
+
+        startButton.addEventListener('click', () => {
+            startMenu.classList.toggle('visible');
+        });
+
+        const apps = [
+            { id: 'explorer', name: 'ファイルエクスプローラー', type: 'file-explorer' },
+            { id: 'browser', name: 'ウェブブラウザ (Bing)', type: 'web-browser' },
+            { id: 'notepad', name: 'メモ帳', type: 'notepad' },
+            { id: 'settings', name: '設定', type: 'settings' },
+            { id: 'calendar', name: 'カレンダー', type: 'calendar' },
+            { id: 'calculator', name: '電卓', type: 'calculator' },
+            { id: 'paint', name: 'ペイント', type: 'paint' },
+            { id: 'music-player', name: 'ミュージックプレーヤー', type: 'music-player' },
+            { id: 'video-player', name: 'ビデオプレーヤー', type: 'video-player' },
+            { id: 'email', name: 'メール', type: 'email' },
+            { id: 'task-manager', name: 'タスクマネージャー', type: 'task-manager' },
+            { id: 'weather', name: '天気予報', type: 'weather' },
+            { id: 'news', name: 'ニュース', type: 'news' },
+            { id: 'maps', name: '地図', type: 'maps' },
+            { id: 'photos', name: '写真', type: 'photos' }
+        ];
+
+        function openApp(appId) {
+            const app = apps.find(a => a.id === appId);
+            const windowDiv = document.createElement('div');
+            windowDiv.className = 'window';
+            windowDiv.id = app.id;
+            windowDiv.style.width = '400px';
+            windowDiv.style.height = '300px';
+            windowDiv.style.top = '50px';
+            windowDiv.style.left = '50px';
+
+            const headerDiv = document.createElement('div');
+            headerDiv.className = 'window-header';
+            headerDiv.innerHTML = `
+                ${app.name}
+                <div>
+                    <button onclick="minimizeWindow('${app.id}')">_</button>
+                    <button onclick="maximizeWindow('${app.id}')">□</button>
+                    <button onclick="closeWindow('${app.id}')">X</button>
+                </div>
+            `;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'window-content';
+            contentDiv.style.height = 'calc(100% - 30px)';
+
+            if (app.type === 'file-explorer') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://example.com/file-explorer"></iframe>
+                `;
+            } else if (app.type === 'web-browser') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://www.bing.com"></iframe>
+                `;
+            } else if (app.type === 'notepad') {
+                contentDiv.innerHTML = `
+                    <textarea></textarea>
+                `;
+            } else if (app.type === 'settings') {
+                contentDiv.innerHTML = `
+                    <ul id="settings-menu">
+                        <li onclick="changeTheme('xp')">XPスタイル</li>
+                        <li onclick="changeTheme('windows7')">Windows 7スタイル</li>
+                    </ul>
+                `;
+            } else if (app.type === 'calendar') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://calendar.google.com"></iframe>
+                `;
+            } else if (app.type === 'calculator') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://example.com/calculator"></iframe>
+                `;
+            } else if (app.type === 'paint') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://jspaint.app/"></iframe>
+                `;
+            } else if (app.type === 'music-player') {
+                contentDiv.innerHTML = `
+                    <audio controls>
+                        <source src="your-audio-file.mp3" type="audio/mp3">
+                        Your browser does not support the audio element.
+                    </audio>
+                `;
+            } else if (app.type === 'video-player') {
+                contentDiv.innerHTML = `
+                    <video controls>
+                        <source src="your-video-file.mp4" type="video/mp4">
+                        Your browser does not support the video element.
+                    </video>
+                `;
+            } else if (app.type === 'email') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://mail.google.com"></iframe>
+                `;
+            } else if (app.type === 'task-manager') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://example.com/task-manager"></iframe>
+                `;
+            } else if (app.type === 'weather') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://www.weather.com"></iframe>
+                `;
+            } else if (app.type === 'news') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://news.google.com"></iframe>
+                `;
+            } else if (app.type === 'maps') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://www.google.com/maps"></iframe>
+                `;
+            } else if (app.type === 'photos') {
+                contentDiv.innerHTML = `
+                    <iframe src="https://photos.google.com"></iframe>
+                `;
+            }
+
+            windowDiv.appendChild(headerDiv);
+            windowDiv.appendChild(contentDiv);
+
+            document.getElementById('desktop').appendChild(windowDiv);
+        }
+
+        function minimizeWindow(appId) {
+            const windowDiv = document.getElementById(appId);
+            windowDiv.style.display = 'none';
+        }
+
+        function maximizeWindow(appId) {
+            const windowDiv = document.getElementById(appId);
+            windowDiv.style.width = '100%';
+            windowDiv.style.height = '100%';
+            windowDiv.style.top = '0';
+            windowDiv.style.left = '0';
+        }
+
+        function closeWindow(appId) {
+            const windowDiv = document.getElementById(appId);
+            windowDiv.remove();
+        }
+
+        function changeTheme(theme) {
+            if (theme === 'xp') {
+                document.body.style.background = 'url(img/xp-background.jfif) no-repeat center center fixed';
+            } else if (theme === 'windows7') {
+                document.body.style.background = 'url(img/windows7.png) no-repeat center center fixed';
+            }
+        }
+    </script>
+</body>
+</html>
