@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windowsの未来のロゴの歴史</title>
+    <style>
+        body {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .logo {
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ddd;
+        }
+        #form {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #form input {
+            padding: 10px;
+            font-size: 16px;
+            margin: 5px;
+        }
+        #saveButton {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+</head>
+<body>
+    <div id="form">
+        <label for="range">期間を指定 (例: 2024-2500): </label>
+        <input type="text" id="range" placeholder="2024-2500">
+        <button id="generateButton">ロゴを生成</button>
+        <button id="saveButton">画像を保存</button>
+    </div>
+    <div id="logoContainer"></div>
+    
+    <script>
+        function createGradient(context, width, height, color1, color2) {
+            let gradient = context.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, color1);
+            gradient.addColorStop(1, color2);
+            return gradient;
+        }
+
+        function getRandomColor() {
+            const colors = ['#FFFFFF', '#ADD8E6', '#0000FF'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function createLogo(seed, width, height) {
+            let canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            let context = canvas.getContext('2d');
+
+            // Seed the random number generator
+            Math.seedrandom(seed);
+
+            // Create gradient
+            let color1 = getRandomColor();
+            let color2 = getRandomColor();
+            context.fillStyle = createGradient(context, width, height, color1, color2);
+            context.fillRect(0, 0, width, height);
+
+            // Draw 4 rounded rectangles
+            context.fillStyle = getRandomColor();
+            let rectWidth = width / 2;
+            let rectHeight = height / 2;
+            context.beginPath();
+            context.moveTo(width / 4, height / 4);
+            context.lineTo(width * 3 / 4, height / 4);
+            context.quadraticCurveTo(width * 7 / 8, height / 4, width * 7 / 8, height / 2);
+            context.lineTo(width * 7 / 8, height * 3 / 4);
+            context.quadraticCurveTo(width * 7 / 8, height * 7 / 8, width * 3 / 4, height * 7 / 8);
+            context.lineTo(width / 4, height * 7 / 8);
+            context.quadraticCurveTo(width / 8, height * 7 / 8, width / 8, height * 3 / 4);
+            context.lineTo(width / 8, height / 2);
+            context.quadraticCurveTo(width / 8, height / 4, width / 4, height / 4);
+            context.closePath();
+            context.fill();
+
+            return canvas;
+        }
+
+        function generateLogos(startYear, endYear, numLogos) {
+            const logoContainer = document.getElementById('logoContainer');
+            logoContainer.innerHTML = '';
+
+            const years = Array.from({length: numLogos}, (_, i) => Math.round(startYear + i * (endYear - startYear) / numLogos));
+
+            years.forEach((year, index) => {
+                const logoCanvas = createLogo(index, 100, 100);
+
+                const logoDiv = document.createElement('div');
+                logoDiv.className = 'logo';
+                logoDiv.appendChild(logoCanvas);
+
+                const caption = document.createElement('p');
+                caption.textContent = `リリース日: ${year}年`;
+                logoDiv.appendChild(caption);
+
+                logoContainer.appendChild(logoDiv);
+            });
+        }
+
+        document.getElementById('generateButton').addEventListener('click', () => {
+            const range = document.getElementById('range').value;
+            const [startYear, endYear] = range.split('-').map(Number);
+
+            if (!isNaN(startYear) && !isNaN(endYear) && startYear < endYear) {
+                generateLogos(startYear, endYear, 40);
+            } else {
+                alert('正しい期間を指定してください (例: 2024-2500)');
+            }
+        });
+
+        document.getElementById('saveButton').addEventListener('click', () => {
+            const logoContainer = document.getElementById('logoContainer');
+            if (logoContainer.children.length === 0) {
+                alert('まずロゴを生成してください');
+                return;
+            }
+
+            logoContainer.querySelectorAll('canvas').forEach((canvas, index) => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `logo_${index + 1}.png`;
+                link.click();
+            });
+        });
+    </script>
+</body>
+</html>
