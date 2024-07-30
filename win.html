@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windowsの未来のロゴの歴史</title>
+    <style>
+        body {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        .logo {
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            width: 100px;
+            height: 100px;
+            border: 1px solid #ddd;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
+</head>
+<body>
+    <script>
+        function createGradient(context, width, height, color1, color2) {
+            let gradient = context.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, color1);
+            gradient.addColorStop(1, color2);
+            return gradient;
+        }
+
+        function createLogo(seed, width, height, useShape, cutoutShape) {
+            let canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            let context = canvas.getContext('2d');
+
+            // Seed the random number generator
+            Math.seedrandom(seed);
+
+            // Create gradient
+            let color1 = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+            let color2 = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+            context.fillStyle = createGradient(context, width, height, color1, color2);
+            context.fillRect(0, 0, width, height);
+
+            if (useShape) {
+                let shape = ['ellipse', 'rectangle', 'polygon'][Math.floor(Math.random() * 3)];
+                context.fillStyle = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+                if (shape === 'ellipse') {
+                    context.beginPath();
+                    context.ellipse(width / 2, height / 2, width / 3, height / 3, 0, 0, 2 * Math.PI);
+                    context.fill();
+                } else if (shape === 'rectangle') {
+                    context.fillRect(width / 4, height / 4, width / 2, height / 2);
+                } else {
+                    context.beginPath();
+                    context.moveTo(width / 2, height / 5);
+                    context.lineTo(width / 5, height * 4 / 5);
+                    context.lineTo(width * 4 / 5, height * 4 / 5);
+                    context.closePath();
+                    context.fill();
+                }
+            }
+
+            // Add 3D effect
+            context.globalAlpha = 0.6;
+            context.fillRect(0, 0, width, height);
+            context.globalAlpha = 1.0;
+
+            // Add points (20% chance)
+            if (Math.random() < 0.2) {
+                context.fillStyle = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+                for (let i = 0; i < Math.floor(Math.random() * 2) + 2; i++) {
+                    let x = Math.random() * width;
+                    let y = Math.random() * height;
+                    context.beginPath();
+                    context.arc(x, y, Math.random() * 10 + 5, 0, 2 * Math.PI);
+                    context.fill();
+                }
+            }
+
+            // Cutout shape
+            context.globalCompositeOperation = 'destination-out';
+            context.fillStyle = 'black';
+            if (cutoutShape === 'parallelogram') {
+                context.beginPath();
+                context.moveTo(width / 4, height / 4);
+                context.lineTo(width * 3 / 4, height / 4);
+                context.lineTo(width * 2 / 3, height * 3 / 4);
+                context.lineTo(width / 3, height * 3 / 4);
+                context.closePath();
+                context.fill();
+            } else if (cutoutShape === 'diamond') {
+                context.beginPath();
+                context.moveTo(width / 2, height / 4);
+                context.lineTo(width * 3 / 4, height / 2);
+                context.lineTo(width / 2, height * 3 / 4);
+                context.lineTo(width / 4, height / 2);
+                context.closePath();
+                context.fill();
+            }
+
+            return canvas;
+        }
+
+        const startYear = 2024;
+        const endYear = 2500;
+        const numLogos = 40;
+        const years = Array.from({length: numLogos}, (_, i) => Math.round(startYear + i * (endYear - startYear) / numLogos));
+
+        years.forEach((year, index) => {
+            const useShape = (year >= 2024 && year <= 2080);
+            const cutoutShape = ['parallelogram', 'diamond', 'rectangle'][Math.floor(Math.random() * 3)];
+            const logoCanvas = createLogo(index, 100, 100, useShape, cutoutShape);
+
+            const logoDiv = document.createElement('div');
+            logoDiv.className = 'logo';
+            logoDiv.appendChild(logoCanvas);
+
+            const caption = document.createElement('p');
+            caption.textContent = `リリース日: ${year}年`;
+            logoDiv.appendChild(caption);
+
+            document.body.appendChild(logoDiv);
+        });
+    </script>
+</body>
+</html>
