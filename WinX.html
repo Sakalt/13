@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows Logo Evolution</title>
+</head>
+<body>
+  <canvas id="canvas" width="1600" height="800"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // ユーザーが期間を指定
+    const startYear = parseInt(prompt("開始年を入力してください (例: 2024)"));
+    const endYear = parseInt(prompt("終了年を入力してください (例: 2500)"));
+    const intervals = 40;
+    const years = Array.from({ length: intervals }, (_, i) => startYear + Math.floor((endYear - startYear) / intervals * i));
+    const colors = ['#FFFFFF', '#AAFFFF', '#44FFFF', '#00FFFF', '#00AAFF', '#0044FF', '#0000FF', '#00AAAA'];
+
+    function getRandomElement(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function drawLogo(ctx, x, y, size, year, color) {
+      ctx.fillStyle = color;
+      ctx.strokeStyle = 'black';
+      ctx.lineWidth = 2;
+
+      switch (Math.floor(Math.random() * 12)) {
+        case 0: // 4つに区切った四角
+          for (let i = 0; i < 2; i++) {
+            for (let j = 0; j < 2; j++) {
+              ctx.fillRect(x + i * size / 2, y + j * size / 2, size / 2, size / 2);
+            }
+          }
+          break;
+        case 1: // 8つに区切った四角
+          for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+              ctx.fillRect(x + i * size / 3, y + j * size / 3, size / 3, size / 3);
+            }
+          }
+          break;
+        case 2: // くりぬきはすべての図形
+          ctx.fillRect(x, y, size, size);
+          ctx.clearRect(x + size / 4, y + size / 4, size / 2, size / 2);
+          break;
+        case 3: // 枠のみ四角
+          ctx.strokeRect(x, y, size, size);
+          break;
+        case 4: // 平行四辺形の連なり
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(x, y + size / 2);
+          ctx.lineTo(x + size / 4, y);
+          ctx.lineTo(x + 3 * size / 4, y);
+          ctx.lineTo(x + size, y + size / 2);
+          ctx.lineTo(x + 3 * size / 4, y + size);
+          ctx.lineTo(x + size / 4, y + size);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+          break;
+        case 5: // 2つの角が丸い四角
+          ctx.beginPath();
+          ctx.moveTo(x, y + size / 2);
+          ctx.arcTo(x, y, x + size / 2, y, size / 2);
+          ctx.lineTo(x + size, y);
+          ctx.arcTo(x + size, y, x + size, y + size / 2, size / 2);
+          ctx.lineTo(x + size, y + size);
+          ctx.lineTo(x, y + size);
+          ctx.closePath();
+          ctx.fill();
+          break;
+        case 6: // 2つの角が丸い四角の中に図形
+          ctx.beginPath();
+          ctx.moveTo(x, y + size / 2);
+          ctx.arcTo(x, y, x + size / 2, y, size / 2);
+          ctx.lineTo(x + size, y);
+          ctx.arcTo(x + size, y, x + size, y + size / 2, size / 2);
+          ctx.lineTo(x + size, y + size);
+          ctx.lineTo(x, y + size);
+          ctx.closePath();
+          ctx.fill();
+          ctx.clearRect(x + size / 4, y + size / 4, size / 2, size / 2);
+          break;
+        case 7: // グラデーション
+          const gradient = ctx.createLinearGradient(x, y, x + size, y + size);
+          gradient.addColorStop(0, color);
+          gradient.addColorStop(1, getRandomElement(colors));
+          ctx.fillStyle = gradient;
+          ctx.fillRect(x, y, size, size);
+          break;
+        case 8: // なめらかの四角
+          ctx.beginPath();
+          ctx.moveTo(x + size / 4, y);
+          ctx.lineTo(x + 3 * size / 4, y);
+          ctx.quadraticCurveTo(x + size, y, x + size, y + size / 4);
+          ctx.lineTo(x + size, y + 3 * size / 4);
+          ctx.quadraticCurveTo(x + size, y + size, x + 3 * size / 4, y + size);
+          ctx.lineTo(x + size / 4, y + size);
+          ctx.quadraticCurveTo(x, y + size, x, y + 3 * size / 4);
+          ctx.lineTo(x, y + size / 4);
+          ctx.quadraticCurveTo(x, y, x + size / 4, y);
+          ctx.fill();
+          break;
+        case 9: // ひし形
+          ctx.save();
+          ctx.translate(x + size / 2, y + size / 2);
+          ctx.rotate(Math.PI / 4);
+          ctx.fillRect(-size / 2, -size / 2, size, size);
+          ctx.restore();
+          break;
+        case 10: // パソコン回転させた見た目
+          ctx.save();
+          ctx.translate(x + size / 2, y + size / 2);
+          ctx.rotate(Math.PI / 4);
+          ctx.fillRect(-size / 2, -size / 2, size, size);
+          ctx.restore();
+          break;
+        case 11: // 図形くりぬき
+          ctx.fillRect(x, y, size, size);
+          ctx.clearRect(x + size / 4, y + size / 4, size / 2, size / 2);
+          break;
+      }
+
+      ctx.fillStyle = 'black';
+      ctx.font = '16px Arial';
+      ctx.fillText(`Year: ${year}`, x, y + size + 20);
+    }
+
+    function generateLogos() {
+      const logoSize = 100;
+      let x = 50;
+      let y = 50;
+
+      years.forEach(year => {
+        const color = getRandomElement(colors);
+        drawLogo(ctx, x, y, logoSize, year, color);
+        x += logoSize + 50;
+        if (x + logoSize > canvas.width) {
+          x = 50;
+          y += logoSize + 50;
+        }
+      });
+    }
+
+    generateLogos();
+  </script>
+</body>
+</html>
