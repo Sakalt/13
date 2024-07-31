@@ -5,4 +5,4 @@ https://sakalt.github.io/13/horizon.html
 https://sakalt.github.io/13/28.html
 https://sakalt.github.io/13/40.html
 https://sakalt.github.io/13/win.html
-https://sakalt.github.io/13/newwin.html
+https://sakalt.github.io/13/winX.html
